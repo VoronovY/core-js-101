@@ -118,119 +118,150 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
-class CssSelectorBuilder {
-  constructor(selector = '') {
-    this.selector = selector;
-    this.elName = '';
-    this.idName = '';
-    this.className = '';
-    this.attrName = '';
-    this.pseudoClassname = '';
-    this.pseudoElementName = '';
-    this.errors = {
-      selectorDublicate: 'Element, id and pseudo-element should not occur more then one time inside the selector',
-      wrongOrder: 'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
-    };
-  }
+// class CssSelectorBuilder {
+//   constructor(selector = '') {
+//     this.selector = selector;
+//     this.elName = '';
+//     this.idName = '';
+//     this.className = '';
+//     this.attrName = '';
+//     this.pseudoClassname = '';
+//     this.pseudoElementName = '';
+//     this.errors = {
+//       selectorDublicate: 'Element, id and pseudo-element
+// should not occur more then one time inside the selector',
+//       wrongOrder: 'Selector parts should be arranged in the following order: element,
+// id, class, attribute, pseudo-class, pseudo-element',
+//     };
+//   }
 
-  trhowErr(type) {
-    const errorText = this.errors[type];
-    throw new Error(errorText || 'Unexpected Error');
-  }
+//   trhowErr(type) {
+//     const errorText = this.errors[type];
+//     throw new Error(errorText || 'Unexpected Error');
+//   }
 
-  dublicateErr() {
-    this.trhowErr('selectorDublicate');
-  }
+//   dublicateErr() {
+//     this.trhowErr('selectorDublicate');
+//   }
 
-  orderErr() {
-    this.trhowErr('wrongOrder');
-  }
+//   orderErr() {
+//     this.trhowErr('wrongOrder');
+//   }
 
-  element(value) {
-    // if (this.elName) this.dublicateErr();
-    this.elName = value;
-    return this;
-  }
+//   element(value) {
+//     // if (this.elName) this.dublicateErr();
+//     this.elName = value;
+//     return this;
+//   }
 
-  id(value) {
-    if (this.idName) this.dublicateErr();
-    this.idName = `#${value}`;
-    return this;
-  }
+//   id(value) {
+//     if (this.idName) this.dublicateErr();
+//     this.idName = `#${value}`;
+//     return this;
+//   }
 
-  class(value) {
-    this.className = `${this.className ? this.className : ''}.${value}`;
-    return this;
-  }
+//   class(value) {
+//     this.className = `${this.className ? this.className : ''}.${value}`;
+//     return this;
+//   }
 
-  attr(value) {
-    this.attrName = `[${value}]`;
-    return this;
-  }
+//   attr(value) {
+//     this.attrName = `[${value}]`;
+//     return this;
+//   }
 
-  pseudoClass(value) {
-    if (this.pseudoElementName) this.dublicateErr();
-    this.pseudoClassname = `${this.pseudoClassname ? this.pseudoClassname : ''}:${value}`;
-    return this;
-  }
+//   pseudoClass(value) {
+//     if (this.pseudoElementName) this.dublicateErr();
+//     this.pseudoClassname = `${this.pseudoClassname ? this.pseudoClassname : ''}:${value}`;
+//     return this;
+//   }
 
-  pseudoElement(value) {
-    this.pseudoElementName = `${this.pseudoElementName ? this.pseudoElementName : ''}::${value}`;
-    return this;
-  }
+//   pseudoElement(value) {
+//     this.pseudoElementName = `${this.pseudoElementName ? this.pseudoElementName : ''}::${value}`;
+//     return this;
+//   }
 
-  addToCombine(value) {
-    if (!this.combinedStrings) this.combinedStrings = [];
-    this.combinedStrings.push(value);
-  }
+//   addToCombine(value) {
+//     if (!this.combinedStrings) this.combinedStrings = [];
+//     this.combinedStrings.push(value);
+//   }
 
-  getFromCombaine() {
-    const string = this.makeString();
-    if (string) return string;
-    return (this.combinedStrings && this.combinedStrings.length) ? this.combinedStrings.pop() : '';
-  }
+//   getFromCombaine() {
+//     const string = this.makeString();
+//     if (string) return string;
+//     return (this.combinedStrings && this.combinedStrings.length)
+//  ? this.combinedStrings.pop() : '';
+//   }
 
-  combine(selector1, combinator, selector2) {
-    this.prop = '';
-    const second = (typeof selector1 === 'object') ? selector1.getFromCombaine() : selector1;
-    const first = (typeof selector2 === 'object') ? selector2.getFromCombaine() : selector2;
-    return new CssSelectorBuilder(`${first} ${combinator} ${second}`);
-  }
+//   combine(selector1, combinator, selector2) {
+//     this.prop = '';
+//     const second = (typeof selector1 === 'object') ? selector1.getFromCombaine() : selector1;
+//     const first = (typeof selector2 === 'object') ? selector2.getFromCombaine() : selector2;
+//     return new CssSelectorBuilder(`${first} ${combinator} ${second}`);
+//   }
 
-  takeSelectorName(value) {
-    this.prop = '';
-    return value || '';
-  }
+//   takeSelectorName(value) {
+//     this.prop = '';
+//     return value || '';
+//   }
 
-  reset() {
-    this.elName = '';
-    this.idName = '';
-    this.className = '';
-    this.attrName = '';
-    this.pseudoClassname = '';
-    this.pseudoElementName = '';
-  }
+//   reset() {
+//     this.elName = '';
+//     this.idName = '';
+//     this.className = '';
+//     this.attrName = '';
+//     this.pseudoClassname = '';
+//     this.pseudoElementName = '';
+//   }
 
-  makeString() {
-    const element = this.takeSelectorName(this.elName);
-    const id = this.takeSelectorName(this.idName);
-    const className = this.takeSelectorName(this.className);
-    const attr = this.takeSelectorName(this.attrName);
-    const pseudoCl = this.takeSelectorName(this.pseudoClassname);
-    const pseudoEl = this.takeSelectorName(this.pseudoElementName);
-    const result = element + id + className + attr + pseudoCl + pseudoEl;
-    this.reset();
-    return result;
-  }
+//   makeString() {
+//     const element = this.takeSelectorName(this.elName);
+//     const id = this.takeSelectorName(this.idName);
+//     const className = this.takeSelectorName(this.className);
+//     const attr = this.takeSelectorName(this.attrName);
+//     const pseudoCl = this.takeSelectorName(this.pseudoClassname);
+//     const pseudoEl = this.takeSelectorName(this.pseudoElementName);
+//     const result = element + id + className + attr + pseudoCl + pseudoEl;
+//     this.reset();
+//     return result;
+//   }
 
-  stringify() {
-    const result = (this.combinedStrings && this.combinedStrings.length)
-      ? this.combinedStrings.pop() : this.makeString();
-    return result;
-  }
-}
+//   stringify() {
+//     const result = (this.combinedStrings && this.combinedStrings.length)
+//       ? this.combinedStrings.pop() : this.makeString();
+//     return result;
+//   }
+// }
 
-const cssSelectorBuilder = new CssSelectorBuilder();
+const cssSelectorBuilder = {
+  element(/* value */) {
+    throw new Error('Not implemented');
+  },
+
+  id(/* value */) {
+    throw new Error('Not implemented');
+  },
+
+  class(/* value */) {
+    throw new Error('Not implemented');
+  },
+
+  attr(/* value */) {
+    throw new Error('Not implemented');
+  },
+
+  pseudoClass(/* value */) {
+    throw new Error('Not implemented');
+  },
+
+  pseudoElement(/* value */) {
+    throw new Error('Not implemented');
+  },
+
+  combine(/* selector1, combinator, selector2 */) {
+    throw new Error('Not implemented');
+  },
+};
 
 
 module.exports = {
