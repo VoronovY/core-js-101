@@ -20,8 +20,14 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  const result = {};
+  result.width = width;
+  result.height = height;
+  result.getArea = function area() {
+    return this.width * this.height;
+  };
+  return result;
 }
 
 
@@ -35,8 +41,8 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
+function getJSON(obj) {
+  return JSON.stringify(obj);
 }
 
 
@@ -51,8 +57,10 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  const obj = JSON.parse(json);
+  Object.setPrototypeOf(obj, proto);
+  return obj;
 }
 
 
@@ -111,32 +119,92 @@ function fromJSON(/* proto, json */) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  element(value) {
+    if (this.elName || this.idName) this.addToCombine(this.makeString());
+    this.elName = value;
+    return this;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    if (
+      this.idName
+      || this.className
+      || this.attrName
+      || this.pseudoClassname
+      || this.pseudoElementName
+    ) this.addToCombine(this.makeString());
+    this.idName = `#${value}`;
+    return this;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    this.className = `${this.className ? this.className : ''}.${value}`;
+    return this;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    this.attrName = `[${value}]`;
+    return this;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    this.pseudoClassname = `${this.pseudoClassname ? this.pseudoClassname : ''}:${value}`;
+    return this;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    this.pseudoElementName = `${this.pseudoElementName ? this.pseudoElementName : ''}::${value}`;
+    return this;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  addToCombine(value) {
+    if (!this.combinedStrings) this.combinedStrings = [];
+    this.combinedStrings.push(value);
+  },
+
+  getFromCombaine() {
+    const string = this.makeString();
+    if (string) return string;
+    return (this.combinedStrings && this.combinedStrings.length) ? this.combinedStrings.pop() : '';
+  },
+
+  combine(selector1, combinator, selector2) {
+    const second = (typeof selector1 === 'object') ? selector1.getFromCombaine() : selector1;
+    const first = (typeof selector2 === 'object') ? selector2.getFromCombaine() : selector2;
+    this.addToCombine(`${first} ${combinator} ${second}`);
+
+    return this;
+  },
+
+  takeSelectorName(value) {
+    return value || '';
+  },
+
+  reset() {
+    this.elName = '';
+    this.idName = '';
+    this.className = '';
+    this.attrName = '';
+    this.pseudoClassname = '';
+    this.pseudoElementName = '';
+  },
+
+  makeString() {
+    const element = this.takeSelectorName(this.elName);
+    const id = this.takeSelectorName(this.idName);
+    const className = this.takeSelectorName(this.className);
+    const attr = this.takeSelectorName(this.attrName);
+    const pseudoCl = this.takeSelectorName(this.pseudoClassname);
+    const pseudoEl = this.takeSelectorName(this.pseudoElementName);
+    const result = element + id + className + attr + pseudoCl + pseudoEl;
+    this.reset();
+    return result;
+  },
+
+  stringify() {
+    const result = (this.combinedStrings && this.combinedStrings.length)
+      ? this.combinedStrings.pop() : this.makeString();
+    return result;
   },
 };
 
