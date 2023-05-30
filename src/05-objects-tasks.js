@@ -118,67 +118,89 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
-const cssSelectorBuilder = {
+class CssSelectorBuilder {
+  constructor(selector = '') {
+    this.selector = selector;
+    this.elName = '';
+    this.idName = '';
+    this.className = '';
+    this.attrName = '';
+    this.pseudoClassname = '';
+    this.pseudoElementName = '';
+    this.errors = {
+      selectorDublicate: 'Element, id and pseudo-element should not occur more then one time inside the selector',
+      wrongOrder: 'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
+    };
+  }
+
+  trhowErr(type) {
+    const errorText = this.errors[type];
+    throw new Error(errorText || 'Unexpected Error');
+  }
+
+  dublicateErr() {
+    this.trhowErr('selectorDublicate');
+  }
+
+  orderErr() {
+    this.trhowErr('wrongOrder');
+  }
+
   element(value) {
-    if (this.elName || this.idName) this.addToCombine(this.makeString());
+    // if (this.elName) this.dublicateErr();
     this.elName = value;
     return this;
-  },
+  }
 
   id(value) {
-    if (
-      this.idName
-      || this.className
-      || this.attrName
-      || this.pseudoClassname
-      || this.pseudoElementName
-    ) this.addToCombine(this.makeString());
+    if (this.idName) this.dublicateErr();
     this.idName = `#${value}`;
     return this;
-  },
+  }
 
   class(value) {
     this.className = `${this.className ? this.className : ''}.${value}`;
     return this;
-  },
+  }
 
   attr(value) {
     this.attrName = `[${value}]`;
     return this;
-  },
+  }
 
   pseudoClass(value) {
+    if (this.pseudoElementName) this.dublicateErr();
     this.pseudoClassname = `${this.pseudoClassname ? this.pseudoClassname : ''}:${value}`;
     return this;
-  },
+  }
 
   pseudoElement(value) {
     this.pseudoElementName = `${this.pseudoElementName ? this.pseudoElementName : ''}::${value}`;
     return this;
-  },
+  }
 
   addToCombine(value) {
     if (!this.combinedStrings) this.combinedStrings = [];
     this.combinedStrings.push(value);
-  },
+  }
 
   getFromCombaine() {
     const string = this.makeString();
     if (string) return string;
     return (this.combinedStrings && this.combinedStrings.length) ? this.combinedStrings.pop() : '';
-  },
+  }
 
   combine(selector1, combinator, selector2) {
+    this.prop = '';
     const second = (typeof selector1 === 'object') ? selector1.getFromCombaine() : selector1;
     const first = (typeof selector2 === 'object') ? selector2.getFromCombaine() : selector2;
-    this.addToCombine(`${first} ${combinator} ${second}`);
-
-    return this;
-  },
+    return new CssSelectorBuilder(`${first} ${combinator} ${second}`);
+  }
 
   takeSelectorName(value) {
+    this.prop = '';
     return value || '';
-  },
+  }
 
   reset() {
     this.elName = '';
@@ -187,7 +209,7 @@ const cssSelectorBuilder = {
     this.attrName = '';
     this.pseudoClassname = '';
     this.pseudoElementName = '';
-  },
+  }
 
   makeString() {
     const element = this.takeSelectorName(this.elName);
@@ -199,14 +221,16 @@ const cssSelectorBuilder = {
     const result = element + id + className + attr + pseudoCl + pseudoEl;
     this.reset();
     return result;
-  },
+  }
 
   stringify() {
     const result = (this.combinedStrings && this.combinedStrings.length)
       ? this.combinedStrings.pop() : this.makeString();
     return result;
-  },
-};
+  }
+}
+
+const cssSelectorBuilder = new CssSelectorBuilder();
 
 
 module.exports = {
