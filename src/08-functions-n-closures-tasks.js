@@ -23,8 +23,8 @@
  *   getComposition(Math.sin, Math.asin)(x) => Math.sin(Math.asin(x))
  *
  */
-function getComposition(/* f, g */) {
-  throw new Error('Not implemented');
+function getComposition(f, g) {
+  return (x) => f(g(x));
 }
 
 
@@ -44,8 +44,8 @@ function getComposition(/* f, g */) {
  *   power05(16) => 4
  *
  */
-function getPowerFunction(/* exponent */) {
-  throw new Error('Not implemented');
+function getPowerFunction(exponent) {
+  return (num) => num ** exponent;
 }
 
 
@@ -62,8 +62,17 @@ function getPowerFunction(/* exponent */) {
  *   getPolynom(8)     => y = 8
  *   getPolynom()      => null
  */
-function getPolynom() {
-  throw new Error('Not implemented');
+function getPolynom(...args) {
+  if (args.length === 0) return null;
+  return function polynom(x) {
+    return args.reduceRight((acc, cur) => ({
+      result: acc.result + cur * (x ** acc.pow),
+      pow: acc.pow + 1,
+    }), {
+      result: 0,
+      pow: 0,
+    }).result;
+  };
 }
 
 
@@ -81,8 +90,13 @@ function getPolynom() {
  *   ...
  *   memoizer() => the same random number  (next run, returns the previous cached result)
  */
-function memoize(/* func */) {
-  throw new Error('Not implemented');
+function memoize(func) {
+  let prevValue = null;
+  return () => {
+    if (prevValue) return prevValue;
+    prevValue = func();
+    return prevValue;
+  };
 }
 
 
@@ -101,8 +115,18 @@ function memoize(/* func */) {
  * }, 2);
  * retryer() => 2
  */
-function retry(/* func, attempts */) {
-  throw new Error('Not implemented');
+function retry(func, attempts) {
+  let callCount = 0;
+  return function fn() {
+    while (callCount <= attempts) {
+      try {
+        return func();
+      } catch (e) {
+        callCount += 1;
+      }
+    }
+    return attempts;
+  };
 }
 
 
@@ -129,8 +153,15 @@ function retry(/* func, attempts */) {
  * cos(3.141592653589793) ends
  *
  */
-function logger(/* func, logFunc */) {
-  throw new Error('Not implemented');
+function logger(func, logFunc) {
+  return function log(...args) {
+    const stringifiedArgs = JSON.stringify(args);
+    const resArgs = `${func.name}(${stringifiedArgs.slice(1, stringifiedArgs.length - 1)})`;
+    logFunc(`${resArgs} starts`);
+    const result = func(...args);
+    logFunc(`${resArgs} ends`);
+    return result;
+  };
 }
 
 
@@ -147,8 +178,15 @@ function logger(/* func, logFunc */) {
  *   partialUsingArguments(fn, 'a','b','c')('d') => 'abcd'
  *   partialUsingArguments(fn, 'a','b','c','d')() => 'abcd'
  */
-function partialUsingArguments(/* fn, ...args1 */) {
-  throw new Error('Not implemented');
+function partialUsingArguments(fn, ...args1) {
+  const chachedArgs = [...args1];
+  return function newFn(...args) {
+    chachedArgs.push(...args);
+    if (chachedArgs.length < fn.length) {
+      return newFn;
+    }
+    return fn(...chachedArgs);
+  };
 }
 
 
@@ -169,8 +207,17 @@ function partialUsingArguments(/* fn, ...args1 */) {
  *   getId4() => 7
  *   getId10() => 11
  */
-function getIdGeneratorFunction(/* startFrom */) {
-  throw new Error('Not implemented');
+function getIdGeneratorFunction(startFrom) {
+  let prevId = startFrom;
+  let isGenerated = false;
+  return () => {
+    const curId = isGenerated ? prevId + 1 : prevId;
+    prevId += isGenerated ? 1 : 0;
+    if (!isGenerated) {
+      isGenerated = true;
+    }
+    return curId;
+  };
 }
 
 
