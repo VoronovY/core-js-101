@@ -118,149 +118,99 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
-// class CssSelectorBuilder {
-//   constructor(selector = '') {
-//     this.selector = selector;
-//     this.elName = '';
-//     this.idName = '';
-//     this.className = '';
-//     this.attrName = '';
-//     this.pseudoClassname = '';
-//     this.pseudoElementName = '';
-//     this.errors = {
-//       selectorDublicate: 'Element, id and pseudo-element
-// should not occur more then one time inside the selector',
-//       wrongOrder: 'Selector parts should be arranged in the following order: element,
-// id, class, attribute, pseudo-class, pseudo-element',
-//     };
-//   }
-
-//   trhowErr(type) {
-//     const errorText = this.errors[type];
-//     throw new Error(errorText || 'Unexpected Error');
-//   }
-
-//   dublicateErr() {
-//     this.trhowErr('selectorDublicate');
-//   }
-
-//   orderErr() {
-//     this.trhowErr('wrongOrder');
-//   }
-
-//   element(value) {
-//     // if (this.elName) this.dublicateErr();
-//     this.elName = value;
-//     return this;
-//   }
-
-//   id(value) {
-//     if (this.idName) this.dublicateErr();
-//     this.idName = `#${value}`;
-//     return this;
-//   }
-
-//   class(value) {
-//     this.className = `${this.className ? this.className : ''}.${value}`;
-//     return this;
-//   }
-
-//   attr(value) {
-//     this.attrName = `[${value}]`;
-//     return this;
-//   }
-
-//   pseudoClass(value) {
-//     if (this.pseudoElementName) this.dublicateErr();
-//     this.pseudoClassname = `${this.pseudoClassname ? this.pseudoClassname : ''}:${value}`;
-//     return this;
-//   }
-
-//   pseudoElement(value) {
-//     this.pseudoElementName = `${this.pseudoElementName ? this.pseudoElementName : ''}::${value}`;
-//     return this;
-//   }
-
-//   addToCombine(value) {
-//     if (!this.combinedStrings) this.combinedStrings = [];
-//     this.combinedStrings.push(value);
-//   }
-
-//   getFromCombaine() {
-//     const string = this.makeString();
-//     if (string) return string;
-//     return (this.combinedStrings && this.combinedStrings.length)
-//  ? this.combinedStrings.pop() : '';
-//   }
-
-//   combine(selector1, combinator, selector2) {
-//     this.prop = '';
-//     const second = (typeof selector1 === 'object') ? selector1.getFromCombaine() : selector1;
-//     const first = (typeof selector2 === 'object') ? selector2.getFromCombaine() : selector2;
-//     return new CssSelectorBuilder(`${first} ${combinator} ${second}`);
-//   }
-
-//   takeSelectorName(value) {
-//     this.prop = '';
-//     return value || '';
-//   }
-
-//   reset() {
-//     this.elName = '';
-//     this.idName = '';
-//     this.className = '';
-//     this.attrName = '';
-//     this.pseudoClassname = '';
-//     this.pseudoElementName = '';
-//   }
-
-//   makeString() {
-//     const element = this.takeSelectorName(this.elName);
-//     const id = this.takeSelectorName(this.idName);
-//     const className = this.takeSelectorName(this.className);
-//     const attr = this.takeSelectorName(this.attrName);
-//     const pseudoCl = this.takeSelectorName(this.pseudoClassname);
-//     const pseudoEl = this.takeSelectorName(this.pseudoElementName);
-//     const result = element + id + className + attr + pseudoCl + pseudoEl;
-//     this.reset();
-//     return result;
-//   }
-
-//   stringify() {
-//     const result = (this.combinedStrings && this.combinedStrings.length)
-//       ? this.combinedStrings.pop() : this.makeString();
-//     return result;
-//   }
-// }
-
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  selector: '',
+  order: [],
+  orderErrorTxt: 'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
+  doubledErrorTxt: 'Element, id and pseudo-element should not occur more then one time inside the selector',
+
+  element(value) {
+    if (this.order.includes(0)) throw Error(this.doubledErrorTxt);
+    if (Math.max(this.order) > 0) throw Error(this.orderErrorTxt);
+    return Object.create(this, {
+      selector: {
+        value: `${this.selector}${value}`,
+      },
+      order: {
+        value: [...this.order, 0],
+      },
+    });
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    if (this.order.includes(1)) throw Error(this.doubledErrorTxt);
+    if (Math.max(this.order) > 1) throw Error(this.orderErrorTxt);
+    return Object.create(this, {
+      selector: {
+        value: `${this.selector}#${value}`,
+      },
+      order: {
+        value: [...this.order, 1],
+      },
+    });
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    if (Math.max(this.order) > 2) throw Error(this.orderErrorTxt);
+    return Object.create(this, {
+      selector: {
+        value: `${this.selector}.${value}`,
+      },
+      order: {
+        value: [...this.order, 2],
+      },
+    });
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    if (Math.max(this.order) > 3) throw Error(this.orderErrorTxt);
+    return Object.create(this, {
+      selector: {
+        value: `${this.selector}[${value}]`,
+      },
+      order: {
+        value: [...this.order, 3],
+      },
+    });
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    if (Math.max(this.order) > 4) throw Error(this.orderErrorTxt);
+
+    return Object.create(this, {
+      selector: {
+        value: `${this.selector}:${value}`,
+      },
+      order: {
+        value: [...this.order, 4],
+      },
+    });
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    if (this.order.includes(5)) throw Error(this.doubledErrorTxt);
+    return Object.create(this, {
+      selector: {
+        value: `${this.selector}::${value}`,
+      },
+      order: {
+        value: [...this.order, 5],
+      },
+    });
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    return Object.create(this, {
+      selector: {
+        value: `${selector1.stringify()} ${combinator} ${selector2.stringify()}`,
+      },
+    });
   },
+
+  stringify() {
+    return this.selector;
+  },
+
 };
 
 
